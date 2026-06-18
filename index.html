@@ -899,6 +899,27 @@ body {
   gap: 10px;
   margin-top: 32px;
 }
+.platform-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  color: var(--sky-deep);
+  background: rgba(127,179,213,0.12);
+  border: 1px solid rgba(127,179,213,0.25);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease;
+}
+.platform-chip svg {
+  flex-shrink: 0;
+}
+.platform-chip:hover {
+  transform: translateY(-3px);
+  background: rgba(127,179,213,0.2);
+}
 
 /* ════════════════════════
    CREDITS PAGE
@@ -968,6 +989,48 @@ body {
   50%      { opacity: 1;    transform: scale(1.15); }
 }
 
+/* ════════════════════════
+   MUSIC TOGGLE
+   ════════════════════════ */
+#music-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 500;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid rgba(127,179,213,0.3);
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(12px);
+  color: var(--sky-deep);
+  font-size: 17px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s ease, background 0.3s ease;
+  box-shadow: 0 8px 20px rgba(127,179,213,0.18);
+}
+#music-toggle:hover {
+  transform: scale(1.08);
+  background: rgba(255,255,255,0.85);
+}
+#music-toggle.playing {
+  animation: music-pulse 2.4s ease-in-out infinite;
+}
+#music-toggle.muted {
+  color: var(--text-faint);
+  opacity: 0.7;
+}
+@keyframes music-pulse {
+  0%, 100% { box-shadow: 0 8px 20px rgba(127,179,213,0.18); }
+  50%      { box-shadow: 0 8px 26px rgba(127,179,213,0.4); }
+}
+@media (max-width: 540px) {
+  #music-toggle { bottom: 16px; right: 16px; width: 42px; height: 42px; }
+}
+
 </style>
 </head>
 <body>
@@ -1001,6 +1064,10 @@ body {
   </nav>
 
   <div id="page-transition" aria-hidden="true"></div>
+
+  <!-- BACKGROUND MUSIC (looped) -->
+  <audio id="bg-music" loop preload="auto" src="bgm.mp3"></audio>
+  <button id="music-toggle" type="button" aria-label="Toggle music" title="Toggle music">♪</button>
 
   <main id="page-shelter" class="page active-page">
   <!-- HERO -->
@@ -1258,9 +1325,14 @@ body {
           <p class="notify-note">No noise. No spam. Just a soft signal when it's time.</p>
 
           <div class="download-platforms reveal">
-            <span class="tag">Windows</span>
-            <span class="tag">macOS</span>
-            <span class="tag">Linux</span>
+            <span class="platform-chip">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M3 5.5L10.5 4.4V11.4H3V5.5ZM11.5 4.25L21 3V11.3H11.5V4.25ZM3 12.4H10.5V19.5L3 18.4V12.4ZM11.5 12.4H21V20.7L11.5 19.5V12.4Z"/></svg>
+              Windows
+            </span>
+            <span class="platform-chip">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M17.6 9.48l1.84-3.18a.5.5 0 1 0-.87-.5l-1.86 3.22a8.94 8.94 0 0 0-7.42 0L7.43 5.8a.5.5 0 1 0-.87.5L8.4 9.48A8.5 8.5 0 0 0 4 16.5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1a8.5 8.5 0 0 0-4.4-7.02ZM8.5 14.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm7 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
+              Android
+            </span>
           </div>
         </div>
       </div>
@@ -1563,13 +1635,131 @@ body {
   });
 })();
 /* ────────────────────────────
-   7. PAGE ROUTER + TRANSITION
+   8. BACKGROUND MUSIC (native audio loop)
    ──────────────────────────── */
+(function initMusic() {
+  const audio = document.getElementById('bg-music');
+  const toggle = document.getElementById('music-toggle');
+  if (!audio || !toggle) return;
+
+  audio.volume = 0.55;
+  let started = false;
+  let isMuted = false;
+
+  function startOnce() {
+    if (started) return;
+    started = true;
+    audio.play().then(() => {
+      toggle.classList.add('playing');
+    }).catch(() => {});
+  }
+  document.addEventListener('click', startOnce);
+  document.addEventListener('keydown', startOnce);
+  document.addEventListener('touchstart', startOnce);
+
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!started) { startOnce(); return; }
+    isMuted = !isMuted;
+    if (isMuted) {
+      audio.pause();
+      toggle.classList.remove('playing');
+      toggle.classList.add('muted');
+    } else {
+      audio.play().catch(() => {});
+      toggle.classList.add('playing');
+      toggle.classList.remove('muted');
+    }
+  });
+})();
+
+
+/* ────────────────────────────
+   9. SOUND BUBBLE CLICK (UI sfx)
+   ──────────────────────────── */
+(function initClickSound() {
+  // Generated softly via WebAudio — a gentle "bubble pop" blip
+  let ctx;
+  function playBubble() {
+    try {
+      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      const now = ctx.currentTime;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(820, now);
+      osc.frequency.exponentialRampToValueAtTime(1400, now + 0.09);
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.18, now + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.24);
+    } catch (e) {}
+  }
+
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('button, a, .float-card, .credit-card, .log-entry, .feat-tile');
+    if (target) playBubble();
+  });
+})();
 (function initRouter() {
   const pages = ['shelter', 'about', 'download', 'credits'];
   const transition = document.getElementById('page-transition');
   const navLinks = document.querySelectorAll('.nav-link');
   let switching = false;
+  let pageCtx;
+
+  function playPageTurn() {
+    try {
+      pageCtx = pageCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = pageCtx;
+      const now = ctx.currentTime;
+
+      // Helper: one short layer of filtered paper-noise
+      function rustleLayer(start, dur, freqFrom, freqTo, peakVol, qVal) {
+        const bufferSize = Math.max(1, Math.floor(ctx.sampleRate * dur));
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        let last = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          // softly-colored noise (slight smoothing avoids harsh digital hiss)
+          const white = Math.random() * 2 - 1;
+          last = (last + white * 0.5) / 1.5;
+          const env = Math.sin((i / bufferSize) * Math.PI); // smooth rise & fall, no clicks
+          data[i] = last * env;
+        }
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(freqFrom, now + start);
+        filter.frequency.linearRampToValueAtTime(freqTo, now + start + dur);
+        filter.Q.value = qVal;
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.0001, now + start);
+        gain.gain.linearRampToValueAtTime(peakVol, now + start + dur * 0.35);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + start + dur);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        noise.start(now + start);
+        noise.stop(now + start + dur);
+      }
+
+      // Layered like a real page: quick light flick, a soft body sweep, a gentle settle
+      rustleLayer(0,    0.16, 2200, 3800, 0.05, 2.2);  // initial light flick (high, airy)
+      rustleLayer(0.05, 0.30, 1400, 2400, 0.07, 1.4);  // main paper sweep (mid, fuller)
+      rustleLayer(0.30, 0.22,  900, 1500, 0.035, 1.6); // gentle settle as page lands
+    } catch (e) {}
+  }
 
   function showPage(name) {
     if (!pages.includes(name) || switching) return;
@@ -1578,6 +1768,7 @@ body {
     if (!next || current === next) return;
 
     switching = true;
+    playPageTurn();
     transition.classList.add('sweep');
 
     setTimeout(() => {
