@@ -1066,7 +1066,7 @@ body {
   <div id="page-transition" aria-hidden="true"></div>
 
   <!-- BACKGROUND MUSIC (looped) -->
-  <audio id="bg-music" loop preload="auto" src="bgm.mp3"></audio>
+  <audio id="bg-music" loop autoplay muted preload="auto" src="bgm.mp3"></audio>
   <button id="music-toggle" type="button" aria-label="Toggle music" title="Toggle music">♪</button>
 
   <main id="page-shelter" class="page active-page">
@@ -1643,33 +1643,33 @@ body {
   if (!audio || !toggle) return;
 
   audio.volume = 0.55;
-  let started = false;
-  let isMuted = false;
+  audio.muted = true;
+  toggle.classList.add('muted');
 
-  function startOnce() {
-    if (started) return;
-    started = true;
-    audio.play().then(() => {
-      toggle.classList.add('playing');
-    }).catch(() => {});
+  function tryPlay() {
+    audio.play().catch(() => {});
   }
-  document.addEventListener('click', startOnce);
-  document.addEventListener('keydown', startOnce);
-  document.addEventListener('touchstart', startOnce);
+  tryPlay(); // autoplay muted is allowed by every browser
+
+  let unlocked = false;
+  function unlock() {
+    if (unlocked) return;
+    unlocked = true;
+    audio.muted = false;
+    tryPlay();
+    toggle.classList.add('playing');
+    toggle.classList.remove('muted');
+  }
+  document.addEventListener('click', unlock, { once: true });
+  document.addEventListener('keydown', unlock, { once: true });
+  document.addEventListener('touchstart', unlock, { once: true });
 
   toggle.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (!started) { startOnce(); return; }
-    isMuted = !isMuted;
-    if (isMuted) {
-      audio.pause();
-      toggle.classList.remove('playing');
-      toggle.classList.add('muted');
-    } else {
-      audio.play().catch(() => {});
-      toggle.classList.add('playing');
-      toggle.classList.remove('muted');
-    }
+    if (!unlocked) { unlock(); return; }
+    audio.muted = !audio.muted;
+    toggle.classList.toggle('muted', audio.muted);
+    toggle.classList.toggle('playing', !audio.muted);
   });
 })();
 
