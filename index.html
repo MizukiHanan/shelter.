@@ -927,12 +927,18 @@ body {
 .credit-card {
   text-align: center;
   padding: 64px 56px;
+  width: 300px;
+  max-width: 300px;
+  flex: 1 1 0;
+  min-width: 0;
   background: rgba(255,255,255,0.55);
   border: 1px solid rgba(247,226,168,0.4);
   border-radius: 28px;
   backdrop-filter: blur(14px);
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease, border-color 0.4s ease;
   position: relative;
+  z-index: 2;
+  cursor: pointer;
 }
 .credit-card:hover {
   transform: translateY(-8px);
@@ -987,6 +993,166 @@ body {
 @keyframes twinkle {
   0%, 100% { opacity: 0.25; transform: scale(0.9); }
   50%      { opacity: 1;    transform: scale(1.15); }
+}
+
+/* ════════════════════════
+   DUO CREDIT — aiko + kao = ♡
+   half hearts rise from behind each
+   box and merge softly in the middle
+   ════════════════════════ */
+.duo-credit-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: nowrap;
+}
+
+/* the tapped box itself — soft glow inviting the next tap */
+.credit-card.duo-armed {
+  animation: duo-card-invite 1.3s ease-in-out infinite;
+}
+.credit-aiko.duo-armed {
+  border-color: rgba(173,232,244,0.9);
+  box-shadow: 0 18px 40px rgba(173,232,244,0.35), 0 0 0 2px rgba(173,232,244,0.45);
+}
+.credit-kao.duo-armed {
+  border-color: rgba(255,182,193,0.9);
+  box-shadow: 0 18px 40px rgba(255,182,193,0.35), 0 0 0 2px rgba(255,182,193,0.45);
+}
+@keyframes duo-card-invite {
+  0%, 100% { transform: translateY(-4px); }
+  50%      { transform: translateY(-11px); }
+}
+
+
+/* the stage lives BEHIND the credit boxes (lower z-index) */
+.duo-heart-stage {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 1px;
+  transform: translate(-50%, -70px);
+  z-index: 1;
+  pointer-events: none;
+}
+.duo-heart-half {
+  position: absolute;
+  width: 48px;
+  height: 44px;
+  top: -22px;
+  left: -24px;
+  opacity: 0;
+  transform: translate(0, 60px) scale(0.5);
+}
+.duo-heart-half::before,
+.duo-heart-half::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 26px;
+  height: 37px;
+  border-radius: 26px 26px 0 0;
+  background: currentColor;
+}
+.duo-heart-half::before { left: 22px; transform: rotate(-45deg); transform-origin: 0 100%; }
+.duo-heart-half::after  { left: 0;    transform: rotate(45deg);  transform-origin: 100% 100%; }
+
+.duo-heart-left {
+  color: var(--aiko);
+  clip-path: inset(0 50% 0 0);
+  filter: drop-shadow(0 0 10px rgba(173,232,244,0.75));
+}
+.duo-heart-right {
+  color: var(--kao);
+  clip-path: inset(0 0 0 50%);
+  filter: drop-shadow(0 0 10px rgba(255,182,193,0.75));
+}
+
+.duo-sparkle-burst {
+  position: absolute;
+  top: -22px; left: -24px;
+  width: 48px; height: 44px;
+}
+.duo-sparkle-burst span {
+  position: absolute;
+  top: 50%; left: 50%;
+  font-size: 15px;
+  opacity: 0;
+  color: var(--kao);
+  transform: translate(-50%, -50%) scale(0.3);
+}
+.duo-sparkle-burst span:nth-child(odd) { color: var(--aiko); }
+.duo-sparkle-burst span:nth-child(1) { --tx: -48px; --ty: -33px; }
+.duo-sparkle-burst span:nth-child(2) { --tx: 45px;  --ty: -36px; }
+.duo-sparkle-burst span:nth-child(3) { --tx: -54px; --ty: 18px;  }
+.duo-sparkle-burst span:nth-child(4) { --tx: 51px;  --ty: 21px;  }
+.duo-sparkle-burst span:nth-child(5) { --tx: -12px; --ty: -54px; }
+.duo-sparkle-burst span:nth-child(6) { --tx: 15px;  --ty: 48px;  }
+
+/* ── activated sequence ── */
+.duo-heart-stage.active .duo-heart-left {
+  animation: duo-rise-left 2.5s linear forwards;
+}
+.duo-heart-stage.active .duo-heart-right {
+  animation: duo-rise-right 2.5s linear forwards;
+}
+.duo-heart-stage.active .duo-sparkle-burst span {
+  animation: duo-sparkle 2.5s ease-out forwards;
+}
+.duo-heart-stage.active .duo-sparkle-burst span:nth-child(2) { animation-delay: 0.04s; }
+.duo-heart-stage.active .duo-sparkle-burst span:nth-child(3) { animation-delay: 0.08s; }
+.duo-heart-stage.active .duo-sparkle-burst span:nth-child(4) { animation-delay: 0.02s; }
+.duo-heart-stage.active .duo-sparkle-burst span:nth-child(5) { animation-delay: 0.10s; }
+.duo-heart-stage.active .duo-sparkle-burst span:nth-child(6) { animation-delay: 0.06s; }
+
+/* phase 1 (0–18%):  quick smooth rise from behind the box
+   phase 2 (18–34%): short delay/beat, holding up high
+   phase 3 (34–58%): quick smooth glide inward + squeeze together
+   phase 4 (58–88%): cute little rebound settle
+   phase 5 (88–100%): float up softly and fade */
+@keyframes duo-rise-left {
+  0%   { opacity: 0; transform: translate(-165px, 190px) scale(0.4); animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+  18%  { opacity: 1; transform: translate(-165px, 0px)   scale(1);   animation-timing-function: linear; }
+  34%  { opacity: 1; transform: translate(-165px, 0px)   scale(1);   animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1); }
+  48%  { opacity: 1; transform: translate(-40px, -6px) scaleX(1.3) scaleY(0.78); animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1); }
+  58%  { opacity: 1; transform: translate(0px, 0px)    scaleX(0.66) scaleY(1.34); animation-timing-function: ease-out; }
+  68%  { transform: translate(0px, 0px) scaleX(1.13) scaleY(0.89); animation-timing-function: ease-out; }
+  78%  { transform: translate(0px, 0px) scaleX(0.97) scaleY(1.04); animation-timing-function: ease-out; }
+  88%  { opacity: 1; transform: translate(0px, -2px)  scale(1);    animation-timing-function: ease-in; }
+  100% { opacity: 0; transform: translate(0px, -22px) scale(0.85); }
+}
+@keyframes duo-rise-right {
+  0%   { opacity: 0; transform: translate(165px, 190px) scale(0.4); animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+  18%  { opacity: 1; transform: translate(165px, 0px)   scale(1);   animation-timing-function: linear; }
+  34%  { opacity: 1; transform: translate(165px, 0px)   scale(1);   animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1); }
+  48%  { opacity: 1; transform: translate(40px, -6px) scaleX(1.3) scaleY(0.78); animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1); }
+  58%  { opacity: 1; transform: translate(0px, 0px)   scaleX(0.66) scaleY(1.34); animation-timing-function: ease-out; }
+  68%  { transform: translate(0px, 0px) scaleX(1.13) scaleY(0.89); animation-timing-function: ease-out; }
+  78%  { transform: translate(0px, 0px) scaleX(0.97) scaleY(1.04); animation-timing-function: ease-out; }
+  88%  { opacity: 1; transform: translate(0px, -2px)  scale(1);    animation-timing-function: ease-in; }
+  100% { opacity: 0; transform: translate(0px, -22px) scale(0.85); }
+}
+@keyframes duo-sparkle {
+  0%, 52%  { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+  62%      { opacity: 1; transform: translate(calc(-50% + var(--tx) * 0.4), calc(-50% + var(--ty) * 0.4)) scale(1.1); }
+  84%      { opacity: 0.9; transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.9); }
+  100%     { opacity: 0; transform: translate(calc(-50% + var(--tx) * 1.15), calc(-50% + var(--ty) * 1.15)) scale(0.4); }
+}
+
+@media (max-width: 640px) {
+  .duo-credit-wrap { gap: 10px; }
+  .credit-card { padding: 32px 14px; border-radius: 20px; }
+  .credit-avatar { width: 64px; height: 64px; margin-bottom: 14px; }
+  .credit-name { font-size: 19px; }
+  .credit-role { font-size: 9px; }
+  .credit-deco { margin-top: 16px; gap: 8px; font-size: 11px; }
+}
+@media (max-width: 420px) {
+  .credit-card { padding: 24px 10px; }
+  .credit-avatar { width: 52px; height: 52px; }
+  .credit-name { font-size: 16px; }
 }
 
 /* ════════════════════════
@@ -1423,18 +1589,27 @@ body {
     </section>
 
     <section class="section">
-      <div class="container" style="display:flex;justify-content:center;gap:32px;flex-wrap:wrap;">
-        <div class="credit-card reveal">
+      <div class="container duo-credit-wrap" style="position:relative;">
+        <div class="credit-card credit-aiko reveal" id="duo-card-aiko" tabindex="0" role="button" aria-label="aiko — tap, then tap kao's card to merge hearts">
           <div class="credit-avatar" style="background:none;box-shadow:none;padding:0;overflow:hidden;"><img src="https://raw.githubusercontent.com/MizukiHanan/shelter./main/aiko.png" alt="aiko" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" /></div>
           <h3 class="credit-name">aiko</h3>
           <p class="credit-role">gamedev &amp; illustrator</p>
           <div class="credit-deco" aria-hidden="true"><span>✦</span><span>◌</span><span>✦</span></div>
         </div>
-        <div class="credit-card reveal">
+
+        <div class="credit-card credit-kao reveal" id="duo-card-kao" tabindex="0" role="button" aria-label="kao — tap, then tap aiko's card to merge hearts">
           <div class="credit-avatar" style="background:none;box-shadow:none;padding:0;overflow:hidden;"><img src="https://raw.githubusercontent.com/MizukiHanan/shelter./main/kao.png" alt="kao" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" /></div>
           <h3 class="credit-name">kao</h3>
           <p class="credit-role">Ideas &amp; illustrator</p>
           <div class="credit-deco" aria-hidden="true"><span>✦</span><span>◌</span><span>✦</span></div>
+        </div>
+
+        <div class="duo-heart-stage" id="duo-heart-stage" aria-hidden="true">
+          <div class="duo-heart-half duo-heart-left"></div>
+          <div class="duo-heart-half duo-heart-right"></div>
+          <div class="duo-sparkle-burst">
+            <span>✦</span><span>✧</span><span>♡</span><span>✦</span><span>✧</span><span>♡</span>
+          </div>
         </div>
       </div>
     </section>
@@ -1713,6 +1888,70 @@ body {
     });
   });
 })();
+/* ────────────────────────────
+   7. DUO CREDIT HEART — aiko + kao = ♡
+   Tap aiko's box, then tap kao's box (either
+   order works) and two half hearts rise from
+   behind each box to merge in the middle.
+   Repeatable on every pair of taps.
+   ──────────────────────────── */
+(function initDuoHeart() {
+  const cardAiko = document.getElementById('duo-card-aiko');
+  const cardKao = document.getElementById('duo-card-kao');
+  const stage = document.getElementById('duo-heart-stage');
+  if (!cardAiko || !cardKao || !stage) return;
+
+  let armed = null; // 'aiko' | 'kao' | null
+  let armTimer, resetTimer;
+
+  function setArmed(who) {
+    armed = who;
+    cardAiko.classList.toggle('duo-armed', who === 'aiko');
+    cardKao.classList.toggle('duo-armed', who === 'kao');
+    clearTimeout(armTimer);
+    if (who) {
+      armTimer = setTimeout(() => setArmed(null), 5000); // forgiving timeout
+    }
+  }
+
+  function playDuo() {
+    clearTimeout(resetTimer);
+    stage.classList.remove('active');
+    void stage.offsetWidth; // force reflow so it can replay every time
+    stage.classList.add('active');
+    resetTimer = setTimeout(() => {
+      stage.classList.remove('active');
+    }, 2600);
+  }
+
+  function handleTap(who) {
+    if (!armed) {
+      setArmed(who);
+      return;
+    }
+    if (armed === who) {
+      // same box tapped again — just keep it armed, refresh the window
+      setArmed(who);
+      return;
+    }
+    // the other box was tapped — they meet in the middle ♡
+    setArmed(null);
+    playDuo();
+  }
+
+  cardAiko.addEventListener('click', () => handleTap('aiko'));
+  cardKao.addEventListener('click', () => handleTap('kao'));
+
+  [cardAiko, cardKao].forEach((card, i) => {
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleTap(i === 0 ? 'aiko' : 'kao');
+      }
+    });
+  });
+})();
+
 /* ────────────────────────────
    8. BACKGROUND MUSIC (native audio loop)
    ──────────────────────────── */
