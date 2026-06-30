@@ -1,0 +1,2590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SHELTER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@200;300;400&family=Noto+Sans+JP:wght@100;200&display=swap" rel="stylesheet" />
+  <style>
+/* ═══════════════════════════════════════════
+   SHELTER · Ethereal White Soft Pastel
+   ═══════════════════════════════════════════ */
+
+/* ── TOKENS ── */
+:root {
+  --white:     #F8FAF7;
+  --cream:     #F2EFE0;
+  --gold:      #F7E2A8;
+  --gold-mid:  #F0CB6E;
+  --sky-light:  #CFE8F5;
+  --sky:      #A9D8EE;
+  --field:      #C7E8B4;
+  --sky-mid:      #7FB3D5;
+  --sky-deep: #2980B9;
+  --gold-deep:     #D9A23B;
+  --text:      #3E4A54;
+  --text-soft: #6E7E89;
+  --text-faint:#A8B6BD;
+
+  /* Exact in-game colors, pulled straight from script.rpy Character() defs */
+  --kao:        #FFB6C1;
+  --aiko:       #ADE8F4;
+  --dialog-fill:    rgba(20,24,28,0.63);
+  --dialog-outline: rgba(255,255,255,0.22);
+  --concept-art: url("concept-art.png");
+
+  --ff-display: 'Cormorant Garamond', Georgia, serif;
+  --ff-body:    'DM Sans', system-ui, sans-serif;
+  --ff-jp:      'Noto Sans JP', sans-serif;
+
+  --radius-sm:  12px;
+  --radius-md:  20px;
+  --radius-lg:  32px;
+  --radius-pill:999px;
+
+  --shadow-soft: 0 4px 32px rgba(80,120,150,0.10);
+  --shadow-card: 0 8px 40px rgba(60,95,125,0.12);
+  --shadow-glow: 0 0 60px rgba(127,179,213,0.18);
+}
+
+/* ── RESET ── */
+*, *::before, *::after {
+  margin: 0; padding: 0;
+  box-sizing: border-box;
+}
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--white);
+  color: var(--text);
+  font-family: var(--ff-body);
+  font-weight: 300;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ── CANVAS ── */
+#petal-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── GALAXY CURSOR TRAIL ── */
+#galaxy-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 100001;
+  pointer-events: none;
+}
+.has-mouse * { cursor: none !important; }
+.custom-cursor {
+  position: fixed;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #A9D8EE 45%, transparent 100%);
+  box-shadow: 0 0 10px 3px rgba(169,216,238,0.95), 0 0 22px 5px rgba(127,179,213,0.55), 0 0 40px 8px rgba(169,216,238,0.25);
+  pointer-events: none;
+  z-index: 100002;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.custom-cursor.visible { opacity: 1; }
+
+/* ════════════════════════
+   ORB BACKGROUND
+   ════════════════════════ */
+.orb-field {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0;
+  animation: orb-float 16s ease-in-out infinite;
+}
+.orb-1 {
+  width: 520px; height: 520px;
+  top: -120px; left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, #F7E2A8 0%, #CFE8F5 60%, transparent 100%);
+  animation-delay: 0s; animation-duration: 18s;
+}
+.orb-2 {
+  width: 380px; height: 380px;
+  top: 30%; right: -80px;
+  background: radial-gradient(circle, #A9D8EE 0%, #CFE8F5 70%, transparent 100%);
+  animation-delay: -4s; animation-duration: 14s;
+}
+.orb-3 {
+  width: 300px; height: 300px;
+  bottom: 20%; left: -60px;
+  background: radial-gradient(circle, #C7E8B4 0%, #A9D8EE 70%, transparent 100%);
+  animation-delay: -8s; animation-duration: 20s;
+}
+.orb-4 {
+  width: 260px; height: 260px;
+  top: 60%; left: 30%;
+  background: radial-gradient(circle, #F7E2A8 0%, transparent 70%);
+  animation-delay: -6s; animation-duration: 15s;
+}
+.orb-5 {
+  width: 200px; height: 200px;
+  top: 10%; left: 10%;
+  background: radial-gradient(circle, #CFE8F5 0%, transparent 70%);
+  animation-delay: -10s; animation-duration: 22s;
+}
+.orb-6 {
+  width: 340px; height: 340px;
+  bottom: 5%; right: 10%;
+  background: radial-gradient(circle, #A9D8EE 0%, #C7E8B4 60%, transparent 100%);
+  animation-delay: -3s; animation-duration: 17s;
+}
+@keyframes orb-float {
+  0%   { opacity: 0;    transform: translateY(0px) scale(1); }
+  15%  { opacity: 0.7; }
+  50%  { opacity: 0.5;  transform: translateY(-30px) scale(1.06); }
+  85%  { opacity: 0.7; }
+  100% { opacity: 0;    transform: translateY(0px) scale(1); }
+}
+.orb-2, .orb-4, .orb-6 { animation-direction: reverse; }
+
+/* ════════════════════════
+   NAV
+   ════════════════════════ */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  padding: 20px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(248,250,247,0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(127,179,213,0.12);
+}
+.nav-logo {
+  font-family: var(--ff-display);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--sky-deep);
+  letter-spacing: 0.08em;
+}
+.nav-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(247,226,168,0.4);
+  border: 1px solid rgba(127,179,213,0.25);
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.15em;
+  color: var(--sky-deep);
+}
+.ping {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--sky-mid);
+  animation: ping-anim 2s ease-in-out infinite;
+}
+@keyframes ping-anim {
+  0%, 100% { opacity: 0.4; box-shadow: 0 0 0 0 rgba(127,179,213,0.5); }
+  50%       { opacity: 1;   box-shadow: 0 0 0 5px rgba(127,179,213,0); }
+}
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 32px;
+}
+.nav-links a {
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  color: var(--text-soft);
+  text-decoration: none;
+  transition: color 0.25s;
+}
+.nav-links a:hover { color: var(--sky-deep); }
+
+/* ════════════════════════
+   HERO
+   ════════════════════════ */
+.hero {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 48px 80px;
+  overflow: hidden;
+  background-image:
+    linear-gradient(180deg,
+      rgba(248,250,247,0.35) 0%,
+      rgba(248,250,247,0.55) 45%,
+      rgba(248,250,247,0.88) 80%,
+      var(--white) 100%),
+    var(--concept-art);
+  background-size: cover;
+  background-position: center 18%;
+  background-repeat: no-repeat;
+}
+.hero-inner {
+  text-align: center;
+  max-width: 680px;
+  position: relative;
+  z-index: 3;
+}
+.hero-eyebrow {
+  font-family: var(--ff-jp);
+  font-size: 10px;
+  font-weight: 200;
+  letter-spacing: 0.35em;
+  color: var(--sky-mid);
+  margin-bottom: 28px;
+  animation: fade-up 0.9s ease both 0.1s;
+}
+.hero-title {
+  font-family: var(--ff-display);
+  font-size: clamp(80px, 15vw, 160px);
+  font-weight: 300;
+  line-height: 0.88;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  animation: fade-up 0.9s ease both 0.25s;
+}
+.hero-title .italic { font-style: italic; color: var(--sky-deep); }
+.hero-sub {
+  font-family: var(--ff-jp);
+  font-size: 10px;
+  font-weight: 100;
+  letter-spacing: 0.4em;
+  color: var(--text-faint);
+  margin-top: 18px;
+  animation: fade-up 0.9s ease both 0.4s;
+}
+.hero-tagline {
+  font-size: 14px;
+  font-weight: 200;
+  line-height: 1.95;
+  color: var(--text-soft);
+  margin-top: 32px;
+  animation: fade-up 0.9s ease both 0.55s;
+}
+.hero-badges {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 36px;
+  animation: fade-up 0.9s ease both 0.7s;
+}
+.badge {
+  padding: 8px 20px;
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.15em;
+}
+.badge-wip {
+  background: rgba(247,226,168,0.6);
+  border: 1px solid rgba(127,179,213,0.3);
+  color: var(--sky-deep);
+}
+.badge-genre {
+  background: rgba(207,232,245,0.5);
+  border: 1px solid rgba(217,162,59,0.3);
+  color: var(--gold-deep);
+}
+
+/* Scroll cue */
+.scroll-cue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 60px;
+  animation: fade-up 0.9s ease both 0.9s;
+}
+.scroll-cue span {
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+}
+.scroll-dot-track {
+  width: 1px;
+  height: 40px;
+  background: rgba(127,179,213,0.15);
+  position: relative;
+  overflow: hidden;
+}
+.scroll-dot {
+  width: 1px;
+  height: 16px;
+  background: linear-gradient(to bottom, transparent, var(--sky-mid), transparent);
+  position: absolute;
+  top: -16px;
+  animation: scroll-run 2s ease-in-out infinite;
+}
+@keyframes scroll-run {
+  0%   { top: -16px; }
+  100% { top: 40px; }
+}
+
+/* Floating UI cards */
+.float-card {
+  position: absolute;
+  background: rgba(248,250,247,0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(127,179,213,0.18);
+  border-radius: var(--radius-md);
+  padding: 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: var(--shadow-card);
+  z-index: 3;
+  animation: float-card-in 1s ease both, card-bob 6s ease-in-out infinite;
+}
+.fc-icon { font-size: 18px; }
+.fc-label {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: 0.05em;
+}
+.fc-sub {
+  font-size: 9px;
+  color: var(--sky-mid);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.fc-1 { top: 22%; left: 4%; animation-delay: 0.8s, 0.8s; animation-duration: 1s, 7s; }
+.fc-2 { top: 55%; right: 4%; animation-delay: 1s, 1s; animation-duration: 1s, 9s; }
+.fc-3 { bottom: 16%; left: 6%; animation-delay: 1.2s, 1.2s; animation-duration: 1s, 8s; }
+@keyframes float-card-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes card-bob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+/* ════════════════════════
+   CONTAINER
+   ════════════════════════ */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 48px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ════════════════════════
+   SECTIONS
+   ════════════════════════ */
+.section {
+  padding: 120px 0;
+  position: relative;
+  z-index: 2;
+}
+.section-eyebrow {
+  font-family: var(--ff-jp);
+  font-size: 9px;
+  font-weight: 200;
+  letter-spacing: 0.4em;
+  color: var(--text-faint);
+  margin-bottom: 40px;
+}
+.section-heading {
+  font-family: var(--ff-display);
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 300;
+  line-height: 1.15;
+  color: var(--text);
+  margin-bottom: 32px;
+}
+.section-heading em {
+  font-style: italic;
+  color: var(--sky-deep);
+}
+.body-text {
+  font-size: 14px;
+  font-weight: 200;
+  line-height: 1.95;
+  color: var(--text-soft);
+  margin-bottom: 16px;
+  max-width: 480px;
+}
+
+/* ════════════════════════
+   CHARACTERS SECTION
+   ════════════════════════ */
+.characters-section {
+  background: linear-gradient(160deg,
+    rgba(255,182,193,0.07) 0%,
+    rgba(248,250,247,0) 45%,
+    rgba(173,232,244,0.10) 100%);
+}
+/* ════════════════════════
+   WORLD SECTION
+   ════════════════════════ */
+.world-section {
+  background: linear-gradient(160deg,
+    rgba(247,226,168,0.12) 0%,
+    rgba(248,250,247,0) 50%,
+    rgba(169,216,238,0.10) 100%);
+}
+.world-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+  margin-bottom: 80px;
+}
+.world-tags {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.tag {
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  background: rgba(247,226,168,0.35);
+  border: 1px solid rgba(127,179,213,0.2);
+  color: var(--sky-deep);
+}
+
+/* Art frame */
+.art-frame {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid rgba(127,179,213,0.18);
+  box-shadow: var(--shadow-card);
+  aspect-ratio: 4/5;
+  background-image:
+    linear-gradient(180deg, rgba(247,226,168,0.15) 0%, rgba(20,20,25,0.55) 100%),
+    var(--concept-art);
+  background-size: cover;
+  background-position: center 30%;
+}
+.art-inner {
+  width: 100%; height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  position: relative;
+  padding: 40px;
+}
+.art-label {
+  position: absolute;
+  bottom: 20px;
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  color: rgba(255,255,255,0.85);
+  font-family: var(--ff-jp);
+  font-weight: 100;
+  z-index: 2;
+}
+
+/* Feature grid */
+.feat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.feat-tile {
+  background: rgba(248,250,247,0.7);
+  border: 1px solid rgba(127,179,213,0.14);
+  border-radius: var(--radius-md);
+  padding: 32px 24px;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+.feat-tile:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-card);
+  border-color: rgba(127,179,213,0.28);
+}
+.feat-emoji { font-size: 24px; margin-bottom: 16px; }
+.feat-title {
+  font-family: var(--ff-display);
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 10px;
+  letter-spacing: 0.02em;
+}
+.feat-desc {
+  font-size: 12px;
+  font-weight: 200;
+  color: var(--text-soft);
+  line-height: 1.8;
+}
+.feat-chip {
+  position: absolute;
+  top: 14px; right: 14px;
+  font-size: 7px;
+  font-weight: 300;
+  letter-spacing: 0.25em;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(247,226,168,0.5);
+  border: 1px solid rgba(127,179,213,0.25);
+  color: var(--sky-mid);
+  text-transform: uppercase;
+}
+
+/* ════════════════════════
+   DEV LOG
+   ════════════════════════ */
+.devlog-section {
+  background: linear-gradient(180deg,
+    rgba(248,250,247,0) 0%,
+    rgba(207,232,245,0.07) 50%,
+    rgba(248,250,247,0) 100%);
+}
+.log-list {
+  margin-top: 56px;
+  max-width: 680px;
+}
+.log-entry {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 32px;
+  padding: 32px 0;
+  border-bottom: 1px solid rgba(127,179,213,0.10);
+}
+.log-date {
+  font-family: var(--ff-jp);
+  font-size: 10px;
+  font-weight: 100;
+  letter-spacing: 0.2em;
+  color: var(--sky-mid);
+  padding-top: 2px;
+}
+.log-content p {
+  font-size: 13px;
+  font-weight: 200;
+  line-height: 1.85;
+  color: var(--text-soft);
+}
+.log-tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+/* ════════════════════════
+   NOTIFY
+   ════════════════════════ */
+.notify-section {
+  text-align: center;
+  padding: 120px 0 160px;
+}
+.notify-inner {
+  position: relative;
+}
+.notify-orb {
+  position: absolute;
+  width: 500px; height: 500px;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(247,226,168,0.35) 0%, rgba(207,232,245,0.2) 50%, transparent 75%);
+  filter: blur(60px);
+  pointer-events: none;
+  animation: glow-pulse 6s ease-in-out infinite;
+}
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+  50%       { opacity: 1;   transform: translate(-50%, -50%) scale(1.15); }
+}
+.notify-heading {
+  font-family: var(--ff-display);
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+.notify-heading em { font-style: italic; color: var(--sky-deep); }
+.notify-sub {
+  font-size: 14px;
+  font-weight: 200;
+  color: var(--text-soft);
+  margin-bottom: 48px;
+}
+.email-box {
+  display: flex;
+  max-width: 420px;
+  margin: 0 auto;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  border: 1px solid rgba(127,179,213,0.3);
+  background: rgba(248,250,247,0.8);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(12px);
+}
+.email-box input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 16px 24px;
+  font-family: var(--ff-body);
+  font-size: 13px;
+  font-weight: 200;
+  color: var(--text);
+  background: transparent;
+  letter-spacing: 0.04em;
+}
+.email-box input::placeholder { color: var(--text-faint); }
+.email-box button {
+  border: none;
+  border-left: 1px solid rgba(127,179,213,0.2);
+  padding: 16px 28px;
+  background: linear-gradient(135deg, rgba(247,226,168,0.8), rgba(207,232,245,0.8));
+  font-family: var(--ff-display);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--sky-deep);
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  transition: background 0.3s ease;
+  white-space: nowrap;
+}
+.email-box button:hover {
+  background: linear-gradient(135deg, rgba(247,226,168,1), rgba(207,232,245,1));
+}
+.notify-note {
+  margin-top: 18px;
+  font-family: var(--ff-jp);
+  font-size: 9px;
+  font-weight: 100;
+  letter-spacing: 0.2em;
+  color: var(--text-faint);
+}
+.notify-deco {
+  margin-top: 56px;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--text-faint);
+  animation: deco-fade 4s ease-in-out infinite;
+}
+@keyframes deco-fade {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 0.8; }
+}
+
+/* ════════════════════════
+   FOOTER
+   ════════════════════════ */
+.footer {
+  border-top: 1px solid rgba(127,179,213,0.12);
+  padding: 36px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+  background: rgba(248,250,247,0.7);
+}
+.footer-left {
+  font-family: var(--ff-display);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--sky-deep);
+}
+.footer-center {
+  font-family: var(--ff-jp);
+  font-size: 9px;
+  font-weight: 100;
+  letter-spacing: 0.25em;
+  color: var(--text-faint);
+}
+.footer-right {
+  font-size: 10px;
+  font-weight: 200;
+  color: var(--text-faint);
+  letter-spacing: 0.15em;
+}
+
+/* ════════════════════════
+   REVEAL ANIMATION
+   ════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.75s ease, transform 0.75s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ════════════════════════
+   RESPONSIVE
+   ════════════════════════ */
+@media (max-width: 900px) {
+  .nav { padding: 16px 24px; }
+  .nav-links { display: none; }
+  .container { padding: 0 24px; }
+  .world-grid { grid-template-columns: 1fr; gap: 48px; }
+  .feat-grid { grid-template-columns: 1fr 1fr; }
+  .hero { padding: 100px 24px 60px; }
+  .fc-1, .fc-2, .fc-3 { display: none; }
+  .footer { flex-direction: column; gap: 10px; text-align: center; }
+}
+@media (max-width: 540px) {
+  .feat-grid { grid-template-columns: 1fr; }
+  .log-entry { grid-template-columns: 1fr; gap: 8px; }
+  .email-box { flex-direction: column; border-radius: var(--radius-md); }
+  .email-box button { border-left: none; border-top: 1px solid rgba(127,179,213,0.2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+
+.about-block {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 56px 0;
+}
+.about-text {
+  font-family: var(--ff-sans);
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.85;
+  color: var(--text-soft);
+  margin-bottom: 20px;
+  letter-spacing: 0.01em;
+}
+.about-text:last-child {
+  margin-bottom: 0;
+}
+
+/* ════════════════════════
+   MULTI-PAGE SYSTEM
+   ════════════════════════ */
+.page {
+  display: none;
+}
+.page.active-page {
+  display: block;
+  animation: page-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.992); filter: blur(6px); }
+  to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+#page-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: radial-gradient(circle at 50% 50%, var(--gold) 0%, var(--sky-light) 60%, var(--white) 100%);
+  transform: scaleY(0);
+  transform-origin: top;
+  pointer-events: none;
+}
+#page-transition.sweep {
+  animation: sweep-curtain 0.85s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+@keyframes sweep-curtain {
+  0%   { transform: scaleY(0);   transform-origin: top; }
+  48%  { transform: scaleY(1);   transform-origin: top; }
+  52%  { transform: scaleY(1);   transform-origin: bottom; }
+  100% { transform: scaleY(0);   transform-origin: bottom; }
+}
+
+.nav-link {
+  position: relative;
+  padding-bottom: 4px;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 0%;
+  height: 1px;
+  background: var(--sky-deep);
+  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nav-link:hover::after { width: 100%; }
+.nav-link.active { color: var(--sky-deep); }
+.nav-link.active::after { width: 100%; }
+
+@media (max-width: 900px) {
+  .nav-links { display: flex !important; gap: 16px; }
+}
+
+/* ════════════════════════
+   SUBPAGE HERO
+   ════════════════════════ */
+.subpage-hero {
+  position: relative;
+  z-index: 2;
+  min-height: 46vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 140px 24px 60px;
+  text-align: center;
+  overflow: hidden;
+}
+.subpage-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 20%, rgba(247,226,168,0.35), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 60%, rgba(169,216,238,0.3), transparent 70%);
+  animation: drift-glow 9s ease-in-out infinite alternate;
+  z-index: -1;
+}
+@keyframes drift-glow {
+  from { transform: translate(0,0) scale(1); }
+  to   { transform: translate(-2%, 1.5%) scale(1.06); }
+}
+.subpage-hero-inner { max-width: 640px; }
+.subpage-title {
+  font-family: var(--ff-display);
+  font-size: clamp(48px, 9vw, 88px);
+  font-weight: 300;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  margin: 12px 0;
+  animation: fade-up 0.9s ease both 0.2s;
+}
+.subpage-title em { font-style: italic; color: var(--sky-deep); }
+
+/* ════════════════════════
+   DOWNLOAD PAGE
+   ════════════════════════ */
+.download-card {
+  max-width: 560px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 56px 40px;
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(127,179,213,0.18);
+  border-radius: var(--radius-lg, 24px);
+  backdrop-filter: blur(14px);
+}
+.download-card .notify-sub {
+  margin: 18px 0 32px;
+  font-size: 14px;
+  font-weight: 200;
+  line-height: 1.8;
+  color: var(--text-soft);
+}
+.download-card .notify-note {
+  margin-top: 16px;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+.download-platforms {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 32px;
+}
+.platform-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  color: var(--sky-deep);
+  background: rgba(127,179,213,0.12);
+  border: 1px solid rgba(127,179,213,0.25);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease;
+}
+.platform-chip svg {
+  flex-shrink: 0;
+}
+.platform-chip:hover {
+  transform: translateY(-3px);
+  background: rgba(127,179,213,0.2);
+}
+
+/* ════════════════════════
+   CREDITS PAGE
+   ════════════════════════ */
+.credit-card {
+  text-align: center;
+  padding: 64px 56px;
+  width: 300px;
+  max-width: 300px;
+  flex: 1 1 0;
+  min-width: 0;
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(247,226,168,0.4);
+  border-radius: 28px;
+  backdrop-filter: blur(14px);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+}
+.credit-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 24px 48px rgba(127,179,213,0.18);
+}
+.credit-avatar {
+  width: 96px; height: 96px;
+  margin: 0 auto 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ff-display);
+  font-style: italic;
+  font-size: 22px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--sky-mid), var(--gold-mid));
+  animation: avatar-float 4s ease-in-out infinite;
+  box-shadow: 0 12px 30px rgba(127,179,213,0.35);
+}
+@keyframes avatar-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-8px) rotate(3deg); }
+}
+.credit-name {
+  font-family: var(--ff-display);
+  font-style: italic;
+  font-size: 26px;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.credit-role {
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  color: var(--sky-deep);
+  text-transform: uppercase;
+}
+.credit-deco {
+  margin-top: 28px;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  color: var(--text-faint);
+  font-size: 14px;
+}
+.credit-deco span {
+  animation: twinkle 2.4s ease-in-out infinite;
+}
+.credit-deco span:nth-child(2) { animation-delay: 0.4s; }
+.credit-deco span:nth-child(3) { animation-delay: 0.8s; }
+@keyframes twinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.9); }
+  50%      { opacity: 1;    transform: scale(1.15); }
+}
+
+/* ════════════════════════
+   DUO CREDIT — aiko + kao = ♡
+   half hearts rise from behind each
+   box and merge softly in the middle
+   ════════════════════════ */
+.duo-credit-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: nowrap;
+}
+
+/* the tapped box itself — soft glow inviting the next tap */
+.credit-card.duo-armed {
+  animation: duo-card-invite 1.3s ease-in-out infinite;
+}
+.credit-aiko.duo-armed {
+  border-color: rgba(173,232,244,0.9);
+  box-shadow: 0 18px 40px rgba(173,232,244,0.35), 0 0 0 2px rgba(173,232,244,0.45);
+}
+.credit-kao.duo-armed {
+  border-color: rgba(255,182,193,0.9);
+  box-shadow: 0 18px 40px rgba(255,182,193,0.35), 0 0 0 2px rgba(255,182,193,0.45);
+}
+@keyframes duo-card-invite {
+  0%, 100% { transform: translateY(-4px); }
+  50%      { transform: translateY(-11px); }
+}
+
+
+/* the stage lives BEHIND the credit boxes (lower z-index) */
+.duo-heart-stage {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 1px;
+  transform: translate(-50%, -70px);
+  z-index: 1;
+  pointer-events: none;
+}
+.duo-heart-half {
+  position: absolute;
+  width: 48px;
+  height: 44px;
+  top: -22px;
+  left: -24px;
+  opacity: 0;
+  transform: translate(0, 60px) scale(0.5);
+}
+.duo-heart-half::before,
+.duo-heart-half::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 26px;
+  height: 37px;
+  border-radius: 26px 26px 0 0;
+  background: currentColor;
+}
+.duo-heart-half::before { left: 22px; transform: rotate(-45deg); transform-origin: 0 100%; }
+.duo-heart-half::after  { left: 0;    transform: rotate(45deg);  transform-origin: 100% 100%; }
+
+.duo-heart-left {
+  color: var(--aiko);
+  clip-path: inset(0 50% 0 0);
+  filter: drop-shadow(0 0 10px rgba(173,232,244,0.75));
+}
+.duo-heart-right {
+  color: var(--kao);
+  clip-path: inset(0 0 0 50%);
+  filter: drop-shadow(0 0 10px rgba(255,182,193,0.75));
+}
+
+.duo-sparkle-burst {
+  position: absolute;
+  top: -22px; left: -24px;
+  width: 48px; height: 44px;
+}
+.duo-sparkle-burst span {
+  position: absolute;
+  top: 50%; left: 50%;
+  font-size: 15px;
+  opacity: 0;
+  color: var(--kao);
+  transform: translate(-50%, -50%) scale(0.3);
+}
+.duo-sparkle-burst span:nth-child(odd) { color: var(--aiko); }
+.duo-sparkle-burst span:nth-child(1) { --tx: -48px; --ty: -33px; }
+.duo-sparkle-burst span:nth-child(2) { --tx: 45px;  --ty: -36px; }
+.duo-sparkle-burst span:nth-child(3) { --tx: -54px; --ty: 18px;  }
+.duo-sparkle-burst span:nth-child(4) { --tx: 51px;  --ty: 21px;  }
+.duo-sparkle-burst span:nth-child(5) { --tx: -12px; --ty: -54px; }
+.duo-sparkle-burst span:nth-child(6) { --tx: 15px;  --ty: 48px;  }
+
+/* ── activated sequence ── */
+.duo-heart-stage.active .duo-heart-left {
+  animation: duo-rise-left 2.5s linear forwards;
+}
+.duo-heart-stage.active .duo-heart-right {
+  animation: duo-rise-right 2.5s linear forwards;
+}
+.duo-heart-stage.active .duo-sparkle-burst span {
+  animation: duo-sparkle 2.5s ease-out forwards;
+}
+.duo-heart-stage.active .duo-sparkle-burst span:nth-child(2) { animation-delay: 0.04s; }
+.duo-heart-stage.active .duo-sparkle-burst span:nth-child(3) { animation-delay: 0.08s; }
+.duo-heart-stage.active .duo-sparkle-burst span:nth-child(4) { animation-delay: 0.02s; }
+.duo-heart-stage.active .duo-sparkle-burst span:nth-child(5) { animation-delay: 0.10s; }
+.duo-heart-stage.active .duo-sparkle-burst span:nth-child(6) { animation-delay: 0.06s; }
+
+/* phase 1 (0–18%):  quick smooth rise from behind the box
+   phase 2 (18–34%): short delay/beat, holding up high
+   phase 3 (34–58%): quick smooth glide inward + squeeze together
+   phase 4 (58–88%): cute little rebound settle
+   phase 5 (88–100%): float up softly and fade */
+@keyframes duo-rise-left {
+  0%   { opacity: 0; transform: translate(-165px, 190px) scale(0.4); animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+  18%  { opacity: 1; transform: translate(-165px, 0px)   scale(1);   animation-timing-function: linear; }
+  34%  { opacity: 1; transform: translate(-165px, 0px)   scale(1);   animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1); }
+  48%  { opacity: 1; transform: translate(-40px, -6px) scaleX(1.3) scaleY(0.78); animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1); }
+  58%  { opacity: 1; transform: translate(0px, 0px)    scaleX(0.66) scaleY(1.34); animation-timing-function: ease-out; }
+  68%  { transform: translate(0px, 0px) scaleX(1.13) scaleY(0.89); animation-timing-function: ease-out; }
+  78%  { transform: translate(0px, 0px) scaleX(0.97) scaleY(1.04); animation-timing-function: ease-out; }
+  88%  { opacity: 1; transform: translate(0px, -2px)  scale(1);    animation-timing-function: ease-in; }
+  100% { opacity: 0; transform: translate(0px, -22px) scale(0.85); }
+}
+@keyframes duo-rise-right {
+  0%   { opacity: 0; transform: translate(165px, 190px) scale(0.4); animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+  18%  { opacity: 1; transform: translate(165px, 0px)   scale(1);   animation-timing-function: linear; }
+  34%  { opacity: 1; transform: translate(165px, 0px)   scale(1);   animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1); }
+  48%  { opacity: 1; transform: translate(40px, -6px) scaleX(1.3) scaleY(0.78); animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1); }
+  58%  { opacity: 1; transform: translate(0px, 0px)   scaleX(0.66) scaleY(1.34); animation-timing-function: ease-out; }
+  68%  { transform: translate(0px, 0px) scaleX(1.13) scaleY(0.89); animation-timing-function: ease-out; }
+  78%  { transform: translate(0px, 0px) scaleX(0.97) scaleY(1.04); animation-timing-function: ease-out; }
+  88%  { opacity: 1; transform: translate(0px, -2px)  scale(1);    animation-timing-function: ease-in; }
+  100% { opacity: 0; transform: translate(0px, -22px) scale(0.85); }
+}
+@keyframes duo-sparkle {
+  0%, 52%  { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+  62%      { opacity: 1; transform: translate(calc(-50% + var(--tx) * 0.4), calc(-50% + var(--ty) * 0.4)) scale(1.1); }
+  84%      { opacity: 0.9; transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.9); }
+  100%     { opacity: 0; transform: translate(calc(-50% + var(--tx) * 1.15), calc(-50% + var(--ty) * 1.15)) scale(0.4); }
+}
+
+@media (max-width: 640px) {
+  .duo-credit-wrap { gap: 10px; }
+  .credit-card { padding: 32px 14px; border-radius: 20px; }
+  .credit-avatar { width: 64px; height: 64px; margin-bottom: 14px; }
+  .credit-name { font-size: 19px; }
+  .credit-role { font-size: 9px; }
+  .credit-deco { margin-top: 16px; gap: 8px; font-size: 11px; }
+}
+@media (max-width: 420px) {
+  .credit-card { padding: 24px 10px; }
+  .credit-avatar { width: 52px; height: 52px; }
+  .credit-name { font-size: 16px; }
+}
+
+/* ════════════════════════
+   ENTRY SCREEN (tap to enter)
+   ════════════════════════ */
+#entry-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: linear-gradient(180deg, var(--sky-light) 0%, var(--white) 70%);
+  transition: opacity 0.7s ease, visibility 0.7s ease;
+}
+#entry-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.entry-inner { padding: 24px; }
+.entry-eyebrow {
+  font-family: var(--ff-body);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: var(--sky-deep);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.entry-title {
+  font-family: var(--ff-display);
+  font-size: clamp(40px, 9vw, 72px);
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  margin: 0 0 12px;
+}
+.entry-sub {
+  font-family: var(--ff-body);
+  font-weight: 200;
+  font-size: 14px;
+  color: var(--text-soft);
+  margin-bottom: 36px;
+  letter-spacing: 0.05em;
+}
+#entry-btn {
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 16px 40px;
+  background: linear-gradient(135deg, rgba(247,226,168,0.9), rgba(207,232,245,0.9));
+  font-family: var(--ff-display);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--sky-deep);
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), background 0.3s ease;
+}
+#entry-btn:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, rgba(247,226,168,1), rgba(207,232,245,1));
+}
+
+/* ════════════════════════
+   MUSIC TOGGLE
+   ════════════════════════ */
+#music-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 500;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid rgba(127,179,213,0.3);
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(12px);
+  color: var(--sky-deep);
+  font-size: 17px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s ease, background 0.3s ease;
+  box-shadow: 0 8px 20px rgba(127,179,213,0.18);
+}
+#music-toggle:hover {
+  transform: scale(1.08);
+  background: rgba(255,255,255,0.85);
+}
+#music-toggle.playing {
+  animation: music-pulse 2.4s ease-in-out infinite;
+}
+#music-toggle.muted {
+  color: var(--text-faint);
+  opacity: 0.7;
+}
+@keyframes music-pulse {
+  0%, 100% { box-shadow: 0 8px 20px rgba(127,179,213,0.18); }
+  50%      { box-shadow: 0 8px 26px rgba(127,179,213,0.4); }
+}
+@media (max-width: 540px) {
+  #music-toggle { bottom: 16px; right: 16px; width: 42px; height: 42px; }
+}
+
+</style>
+</head>
+<body>
+
+  <!-- GALAXY CURSOR TRAIL -->
+  <canvas id="galaxy-canvas"></canvas>
+  <div class="custom-cursor" id="custom-cursor"></div>
+
+  <!-- ENTRY SCREEN -->
+  <div id="entry-screen">
+    <div class="entry-inner">
+      <p class="entry-eyebrow">✦ shelter ✦</p>
+      <h1 class="entry-title">Shelter</h1>
+      <p class="entry-sub">a game about softness</p>
+      <button id="entry-btn" type="button">✦ Enter ✦</button>
+    </div>
+  </div>
+
+  <!-- Floating orbs background -->
+  <div class="orb-field" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+    <div class="orb orb-5"></div>
+    <div class="orb orb-6"></div>
+  </div>
+
+  <!-- Canvas for particles -->
+  <canvas id="petal-canvas" aria-hidden="true"></canvas>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo">✦ shelter</div>
+    <div class="nav-pill">
+      <span class="ping"></span>
+      in development
+    </div>
+    <ul class="nav-links">
+      <li><a href="javascript:void(0)" data-page="shelter" class="nav-link active">Shelter</a></li>
+      <li><a href="javascript:void(0)" data-page="about" class="nav-link">About</a></li>
+      <li><a href="javascript:void(0)" data-page="download" class="nav-link">Download</a></li>
+      <li><a href="javascript:void(0)" data-page="credits" class="nav-link">Credits</a></li>
+    </ul>
+  </nav>
+
+  <div id="page-transition" aria-hidden="true"></div>
+
+  <!-- BACKGROUND MUSIC (looped) -->
+  <audio id="bg-music" loop autoplay muted preload="auto" src="bgm.mp3"></audio>
+  <button id="music-toggle" type="button" aria-label="Toggle music" title="Toggle music">♪</button>
+
+  <main id="page-shelter" class="page active-page">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <p class="hero-eyebrow">✦ &nbsp; a game about softness &nbsp; ✦</p>
+
+      <h1 class="hero-title">
+        <span class="title-line">Shel</span><span class="title-line italic">ter</span>
+      </h1>
+
+      <p class="hero-sub">避難所 &nbsp;·&nbsp; sanctuary &nbsp;·&nbsp; refuge</p>
+
+      <div class="hero-badges">
+        <span class="badge badge-wip">✦ In Development</span>
+        <span class="badge badge-genre">Relax · Exploration</span>
+      </div>
+
+      <div class="scroll-cue">
+        <span>scroll to explore</span>
+        <div class="scroll-dot-track"><div class="scroll-dot"></div></div>
+      </div>
+    </div>
+
+    <!-- Decorative floating cards -->
+    <div class="float-card fc-1">
+      <span class="fc-icon">🕊</span>
+      <span class="fc-label">Side-Scroll Walk</span>
+      <span class="fc-sub">in dev</span>
+    </div>
+    <div class="float-card fc-2">
+      <span class="fc-icon">🍃</span>
+      <span class="fc-label">Ambient Layers</span>
+      <span class="fc-sub">prototype</span>
+    </div>
+    <div class="float-card fc-3">
+      <span class="fc-icon">✨</span>
+      <span class="fc-label">Map Fragments</span>
+      <span class="fc-sub">concept</span>
+    </div>
+  </section>
+
+  <!-- CHARACTERS -->
+  <section class="section characters-section" id="characters">
+    <div class="container">
+      <div class="about-block reveal">
+        <h2 class="section-heading">About <em>Shelter</em></h2>
+        <p class="about-text">
+          Shelter is a short, quiet game about a little girl named Kao who wakes up alone in a vast green field — with no memory of how she got there.
+        </p>
+        <p class="about-text">
+          She doesn't panic. She walks. She looks around. And slowly, gently, she begins to understand the world she's in.
+        </p>
+        <p class="about-text">
+          The goal of Shelter is simple: to let the player feel calm. To see something beautiful. To move through a world that feels safe, even when it's unfamiliar. No combat, no pressure — just exploration, soft interaction, and a story that unfolds at its own pace.
+        </p>
+        <p class="about-text">
+          Built in Godot Engine 4.7 as a 2D side-scrolling experience. Every sound, every step, every moment is designed to carry meaning — and to leave the player feeling something soft.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORLD SECTION -->
+  <section class="section world-section" id="world">
+    <div class="container">
+      
+
+      <div class="world-grid">
+        <div class="world-text reveal">
+          <h2 class="section-heading">A vast<br/>green<br/><em>field</em></h2>
+          <p class="body-text">
+            A little girl wakes up in a vast, quiet green field. She doesn't know how she got here — and this world feels like it's holding a secret. She sets out to understand what happened, walking gently through everything this place has to offer.
+          </p>
+          <p class="body-text">
+            Built in Godot Engine 4.7 — a soft 2D side-scrolling world carried by calm, meaningful sound. Designed to feel safe, beautiful, and present.
+          </p>
+          <div class="world-tags">
+            <span class="tag">Singleplayer</span>
+            <span class="tag">Relax Exploration</span>
+            <span class="tag">Cute Interaction</span>
+            <span class="tag">Calmful</span>
+            <span class="tag">2D Side-Scrolling</span>
+            <span class="tag">Godot Engine 4.7</span>
+          </div>
+        </div>
+
+        <div class="world-visual reveal">
+          <div class="art-frame">
+            <div class="art-inner">
+              <p class="art-label">Build 0.0.1 · Concept Art</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature tiles -->
+      <div class="feat-grid">
+        <div class="feat-tile reveal">
+          <div class="feat-emoji">🌿</div>
+          <h3 class="feat-title">Relax Exploration</h3>
+          <p class="feat-desc">A calm 2D side-scrolling world — wide green fields, soft wind, and the quiet hum of a world waiting to be found.</p>
+          <span class="feat-chip">WIP</span>
+        </div>
+        <div class="feat-tile reveal">
+          <div class="feat-emoji">🎵</div>
+          <h3 class="feat-title">Chill & Meaningful Sound</h3>
+          <p class="feat-desc">Relaxing, ambient music layered with natural sounds — designed to feel present, not just heard. Every note carries weight.</p>
+          <span class="feat-chip">Prototype</span>
+        </div>
+        <div class="feat-tile reveal">
+          <div class="feat-emoji">🌸</div>
+          <h3 class="feat-title">Soft Heart Story</h3>
+          <p class="feat-desc">A story told gently — no rushing, no pressure. Just Kao walking forward, discovering beauty and finding a sense of safety in the unknown.</p>
+          <span class="feat-chip">Writing</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEV LOG -->
+  <section class="section devlog-section" id="devlog">
+    <div class="container">
+      <p class="section-eyebrow">// dev_log · transmissions</p>
+      <h2 class="section-heading reveal">From the<br/><em>development diary</em></h2>
+
+      <div class="log-list">
+        <div class="log-entry reveal">
+          <div class="log-date">February 2026</div>
+          <div class="log-content">
+            <p>After a long and difficult journey, we finally made the decision to bring this game to life. We had very little support and resources along the way — but we gave everything we had. This is our first official game, and we hope it carries the warmth and beauty we always imagined it would.</p>
+            <div class="log-tags"><span class="tag">Engine</span><span class="tag">Physics</span></div>
+          </div>
+        </div>
+        <div class="log-entry reveal">
+          <div class="log-date">February 2020</div>
+          <div class="log-content">
+            <p>With more experience behind us, we settled on the name Shelter — and the concept began to take real shape. We wanted every character, every environment, every small detail to carry meaning. We felt ready to make the game. But somehow, life had other plans.</p>
+            <div class="log-tags"><span class="tag">Audio</span><span class="tag">Systems</span></div>
+          </div>
+        </div>
+        <div class="log-entry reveal">
+          <div class="log-date">May 2018</div>
+          <div class="log-content">
+            <p>We renamed the project to Lost Memory, as the story had begun shifting away from conflict. We wanted it to be about feeling — about emotion over action. Shelter still existed as a name in the back of our minds, but it didn't feel quite right yet.</p>
+            <div class="log-tags"><span class="tag">World</span><span class="tag">Art</span></div>
+          </div>
+        </div>
+        <div class="log-entry reveal">
+          <div class="log-date">Sept 2017</div>
+          <div class="log-content">
+            <p>It started with a conversation. We talked about making our very first game together and called it Broken World — an RPG, ambitious and rough around the edges. That name was the beginning of everything.</p>
+            <div class="log-tags"><span class="tag">Origin</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NOTIFY -->
+  <section class="section notify-section" id="notify">
+    <div class="container notify-inner">
+      <div class="notify-orb" aria-hidden="true"></div>
+      <p class="section-eyebrow">// join the waitlist</p>
+      <h2 class="notify-heading reveal">Be first<br/>to enter <em>Shelter</em></h2>
+      <p class="notify-sub reveal">We'll send you a gentle note when the doors open.</p>
+
+      <div class="email-box reveal">
+        <input type="email" id="email-input" placeholder="your@dream.here" autocomplete="email" />
+        <button id="notify-btn" type="button">✦ Await</button>
+      </div>
+      <p class="notify-note reveal">No noise. No spam. Just a soft signal when it's time.</p>
+
+      <div class="notify-deco" aria-hidden="true">
+        <span>✦</span><span>◌</span><span>✦</span><span>◌</span><span>✦</span>
+      </div>
+    </div>
+  </section>
+
+  </main>
+
+  <!-- ═══════════════ ABOUT PAGE ═══════════════ -->
+  <main id="page-about" class="page">
+    <section class="subpage-hero">
+      <div class="subpage-hero-inner reveal">
+        <p class="hero-eyebrow">✦ &nbsp; the story behind it &nbsp; ✦</p>
+        <h1 class="subpage-title">About <em>Shelter</em></h1>
+        <p class="hero-sub">物語 &nbsp;·&nbsp; story &nbsp;·&nbsp; origin</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="about-block reveal">
+          <h2 class="section-heading">A world that <em>waits</em></h2>
+          <p class="about-text">
+            Shelter is a short, quiet game about a little girl named Kao who wakes up alone in a vast green field — with no memory of how she got there.
+          </p>
+          <p class="about-text">
+            She doesn't panic. She walks. She looks around. And slowly, gently, she begins to understand the world she's in.
+          </p>
+          <p class="about-text">
+            The goal of Shelter is simple: to let the player feel calm. To see something beautiful. To move through a world that feels safe, even when it's unfamiliar. No combat, no pressure — just exploration, soft interaction, and a story that unfolds at its own pace.
+          </p>
+          <p class="about-text">
+            Built in Godot Engine 4.7 as a 2D side-scrolling experience. Every sound, every step, every moment is designed to carry meaning — and to leave the player feeling something soft.
+          </p>
+        </div>
+
+        <div class="feat-grid" style="margin-top:64px;">
+          <div class="feat-tile reveal">
+            <div class="feat-emoji">🌿</div>
+            <h3 class="feat-title">Relax Exploration</h3>
+            <p class="feat-desc">A calm 2D side-scrolling world — wide green fields, soft wind, and the quiet hum of a world waiting to be found.</p>
+            <span class="feat-chip">WIP</span>
+          </div>
+          <div class="feat-tile reveal">
+            <div class="feat-emoji">🎵</div>
+            <h3 class="feat-title">Chill & Meaningful Sound</h3>
+            <p class="feat-desc">Relaxing, ambient music layered with natural sounds — designed to feel present, not just heard. Every note carries weight.</p>
+            <span class="feat-chip">Prototype</span>
+          </div>
+          <div class="feat-tile reveal">
+            <div class="feat-emoji">🌸</div>
+            <h3 class="feat-title">Soft Heart Story</h3>
+            <p class="feat-desc">A story told gently — no rushing, no pressure. Just Kao walking forward, discovering beauty and finding a sense of safety in the unknown.</p>
+            <span class="feat-chip">Writing</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══════════════ DOWNLOAD PAGE ═══════════════ -->
+  <main id="page-download" class="page">
+    <section class="subpage-hero">
+      <div class="subpage-hero-inner reveal">
+        <p class="hero-eyebrow">✦ &nbsp; enter the field &nbsp; ✦</p>
+        <h1 class="subpage-title">Download</h1>
+        <p class="hero-sub">ダウンロード &nbsp;·&nbsp; not yet available</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="download-card reveal">
+          <div class="notify-orb" aria-hidden="true" style="position:relative;margin:0 auto 24px;"></div>
+          <h2 class="notify-heading" style="font-size:clamp(28px,5vw,40px);">Shelter isn't<br/>out <em>yet</em></h2>
+          <p class="notify-sub">Build 0.0.1 is still being shaped, gently, by hand. Leave your email and we'll send a soft signal the moment the doors open.</p>
+
+          <div class="email-box reveal">
+            <input type="email" id="email-input-dl" placeholder="your@dream.here" autocomplete="email" />
+            <button id="notify-btn-dl" type="button">✦ Await</button>
+          </div>
+          <p class="notify-note">No noise. No spam. Just a soft signal when it's time.</p>
+
+          <div class="download-platforms reveal">
+            <span class="platform-chip">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M3 5.5L10.5 4.4V11.4H3V5.5ZM11.5 4.25L21 3V11.3H11.5V4.25ZM3 12.4H10.5V19.5L3 18.4V12.4ZM11.5 12.4H21V20.7L11.5 19.5V12.4Z"/></svg>
+              Windows
+            </span>
+            <span class="platform-chip">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M17.6 9.48l1.84-3.18a.5.5 0 1 0-.87-.5l-1.86 3.22a8.94 8.94 0 0 0-7.42 0L7.43 5.8a.5.5 0 1 0-.87.5L8.4 9.48A8.5 8.5 0 0 0 4 16.5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1a8.5 8.5 0 0 0-4.4-7.02ZM8.5 14.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm7 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
+              Android
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══════════════ CREDITS PAGE ═══════════════ -->
+  <main id="page-credits" class="page">
+    <section class="subpage-hero">
+      <div class="subpage-hero-inner reveal">
+        <p class="hero-eyebrow">✦ &nbsp; made with care &nbsp; ✦</p>
+        <h1 class="subpage-title">Credits</h1>
+        <p class="hero-sub">クレジット &nbsp;·&nbsp; the hands behind it</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container duo-credit-wrap" style="position:relative;">
+        <div class="credit-card credit-aiko reveal" id="duo-card-aiko" tabindex="0" role="button" aria-label="aiko — tap, then tap kao's card to merge hearts">
+          <div class="credit-avatar" style="background:none;box-shadow:none;padding:0;overflow:hidden;"><img src="https://raw.githubusercontent.com/MizukiHanan/shelter./main/aiko.png" alt="aiko" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" /></div>
+          <h3 class="credit-name">aiko</h3>
+          <p class="credit-role">gamedev &amp; illustrator</p>
+          <div class="credit-deco" aria-hidden="true"><span>✦</span><span>◌</span><span>✦</span></div>
+        </div>
+
+        <div class="credit-card credit-kao reveal" id="duo-card-kao" tabindex="0" role="button" aria-label="kao — tap, then tap aiko's card to merge hearts">
+          <div class="credit-avatar" style="background:none;box-shadow:none;padding:0;overflow:hidden;"><img src="https://raw.githubusercontent.com/MizukiHanan/shelter./main/kao.png" alt="kao" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" /></div>
+          <h3 class="credit-name">kao</h3>
+          <p class="credit-role">Ideas &amp; illustrator</p>
+          <div class="credit-deco" aria-hidden="true"><span>✦</span><span>◌</span><span>✦</span></div>
+        </div>
+
+        <div class="duo-heart-stage" id="duo-heart-stage" aria-hidden="true">
+          <div class="duo-heart-half duo-heart-left"></div>
+          <div class="duo-heart-half duo-heart-right"></div>
+          <div class="duo-sparkle-burst">
+            <span>✦</span><span>✧</span><span>♡</span><span>✦</span><span>✧</span><span>♡</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-left">✦ shelter</div>
+    <div class="footer-center">避難所 · Build 0.0.1 · Still dreaming</div>
+    <div class="footer-right">© 2026</div>
+  </footer>
+
+  <script>
+/* ═══════════════════════════════════════════
+   SHELTER · main.js
+   Particles · Scroll reveals · Interactions
+   ═══════════════════════════════════════════ */
+
+/* ────────────────────────────
+   1. PETAL PARTICLE CANVAS
+   ──────────────────────────── */
+(function initPetals() {
+  const canvas = document.getElementById('petal-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  let W, H;
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Pastel colours for particles
+  const COLORS = [
+    'rgba(247,226,168,',   // gold
+    'rgba(207,232,245,',   // sky light
+    'rgba(169,216,238,',   // sky
+    'rgba(199,232,180,',   // field
+    'rgba(127,179,213,',   // sky mid
+    'rgba(217,162,59,',   // gold deep
+  ];
+
+  class Petal {
+    constructor(initial) {
+      this.init(initial);
+    }
+    init(initial = false) {
+      this.x = Math.random() * W;
+      this.y = initial ? Math.random() * H : H + 20;
+      this.r = Math.random() * 3.5 + 1;
+      this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      this.alpha = Math.random() * 0.45 + 0.05;
+      this.vy = -(Math.random() * 0.5 + 0.15);
+      this.vx = (Math.random() - 0.5) * 0.25;
+      this.wobble = Math.random() * Math.PI * 2;
+      this.wobbleSpeed = (Math.random() - 0.5) * 0.018;
+      this.wobbleAmp = Math.random() * 1.2 + 0.3;
+      this.life = 0;
+      this.maxLife = Math.random() * 500 + 300;
+      // Shape: 0 = circle, 1 = elongated oval, 2 = star-dot
+      this.shape = Math.random() < 0.6 ? 0 : (Math.random() < 0.5 ? 1 : 2);
+    }
+    update() {
+      this.wobble += this.wobbleSpeed;
+      this.x += this.vx + Math.sin(this.wobble) * this.wobbleAmp * 0.6;
+      this.y += this.vy;
+      this.life++;
+      if (this.y < -30 || this.life > this.maxLife) this.init();
+    }
+    draw() {
+      const fade = Math.min(this.life / 80, (this.maxLife - this.life) / 80, 1);
+      const a = this.alpha * fade;
+      if (a <= 0) return;
+      ctx.save();
+      ctx.globalAlpha = a;
+
+      if (this.shape === 0) {
+        // Soft circle
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+        ctx.fillStyle = this.color + '1)';
+        ctx.fill();
+        // Inner glow
+        const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r * 2.5);
+        grd.addColorStop(0, this.color + '0.3)');
+        grd.addColorStop(1, this.color + '0)');
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r * 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = grd;
+        ctx.fill();
+
+      } else if (this.shape === 1) {
+        // Elongated feather-oval
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(Math.sin(this.wobble) * 0.4);
+        ctx.scale(1, 2.8);
+        ctx.beginPath();
+        ctx.arc(0, 0, this.r * 0.9, 0, Math.PI * 2);
+        ctx.fillStyle = this.color + '0.9)';
+        ctx.fill();
+        ctx.restore();
+
+      } else {
+        // Small sparkle cross
+        const s = this.r * 1.6;
+        ctx.strokeStyle = this.color + '0.8)';
+        ctx.lineWidth = 0.7;
+        ctx.beginPath();
+        ctx.moveTo(this.x - s, this.y);
+        ctx.lineTo(this.x + s, this.y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y - s);
+        ctx.lineTo(this.x, this.y + s);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+  }
+
+  const COUNT = window.innerWidth < 600 ? 60 : 130;
+  const petals = Array.from({ length: COUNT }, () => new Petal(true));
+
+  function loop() {
+    ctx.clearRect(0, 0, W, H);
+    petals.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+
+/* ────────────────────────────
+   2. SCROLL REVEAL
+   ──────────────────────────── */
+(function initReveal() {
+  window._revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const siblings = entry.target.parentElement.querySelectorAll('.reveal');
+          let idx = 0;
+          siblings.forEach((s, j) => { if (s === entry.target) idx = j; });
+          setTimeout(() => {
+            entry.target.classList.add('visible');
+          }, idx * 80);
+          window._revealObserver.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+  );
+
+  window._observeReveals = function (root) {
+    (root || document).querySelectorAll('.reveal:not(.visible)').forEach(el => window._revealObserver.observe(el));
+  };
+
+  window._observeReveals(document);
+})();
+
+
+/* ────────────────────────────
+   3. NOTIFY BUTTON
+   ──────────────────────────── */
+(function initNotify() {
+  function wire(btnId, inpId) {
+    const btn = document.getElementById(btnId);
+    const inp = document.getElementById(inpId);
+    if (!btn || !inp) return;
+
+    btn.addEventListener('click', () => {
+      const val = inp.value.trim();
+      if (!val || !val.includes('@')) {
+        inp.style.outline = '2px solid rgba(127,179,213,0.6)';
+        inp.focus();
+        setTimeout(() => { inp.style.outline = 'none'; }, 1200);
+        return;
+      }
+      btn.textContent = '✦';
+      btn.style.background = 'linear-gradient(135deg, rgba(199,232,180,0.9), rgba(247,226,168,0.9))';
+      inp.value = '';
+      inp.placeholder = 'You\'ll hear from us softly ✦';
+      inp.disabled = true;
+      btn.disabled = true;
+
+      setTimeout(() => {
+        inp.placeholder = 'your@dream.here';
+        inp.disabled = false;
+        btn.disabled = false;
+        btn.textContent = '✦ Await';
+        btn.style.background = '';
+      }, 4000);
+    });
+
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') btn.click();
+    });
+  }
+
+  wire('notify-btn', 'email-input');
+  wire('notify-btn-dl', 'email-input-dl');
+})();
+
+
+/* ────────────────────────────
+   4. NAV: active + shrink
+   ──────────────────────────── */
+(function initNav() {
+  const nav = document.querySelector('.nav');
+  if (!nav) return;
+
+  let last = 0;
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    if (y > 60) {
+      nav.style.padding = '14px 48px';
+      nav.style.boxShadow = '0 2px 24px rgba(80,120,150,0.07)';
+    } else {
+      nav.style.padding = '';
+      nav.style.boxShadow = '';
+    }
+    last = y;
+  }, { passive: true });
+})();
+
+
+/* ────────────────────────────
+   5. MOUSE PARALLAX on hero
+   ──────────────────────────── */
+(function initParallax() {
+  const orbs = document.querySelectorAll('.orb');
+  if (!orbs.length) return;
+
+  let mx = 0, my = 0;
+  document.addEventListener('mousemove', (e) => {
+    mx = (e.clientX / window.innerWidth  - 0.5) * 2;
+    my = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  const speeds = [0.012, 0.020, 0.015, 0.025, 0.010, 0.018];
+  let rafId;
+
+  function tick() {
+    orbs.forEach((orb, i) => {
+      const s = speeds[i] || 0.015;
+      const dx = mx * window.innerWidth  * s;
+      const dy = my * window.innerHeight * s;
+      orb.style.transform = `translate(${dx}px, ${dy}px)`;
+    });
+    rafId = requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+
+/* ────────────────────────────
+   6. FLOAT CARDS cursor attraction
+   ──────────────────────────── */
+(function initCards() {
+  const cards = document.querySelectorAll('.float-card');
+  if (!cards.length) return;
+
+  document.addEventListener('mousemove', (e) => {
+    cards.forEach(card => {
+      const rect = card.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top  + rect.height / 2;
+      const dx = (e.clientX - cx) * 0.04;
+      const dy = (e.clientY - cy) * 0.04;
+      // Gentle lean
+      card.style.transform = `translate(${dx}px, ${dy}px)`;
+    });
+  });
+})();
+/* ────────────────────────────
+   7. DUO CREDIT HEART — aiko + kao = ♡
+   Tap aiko's box, then tap kao's box (either
+   order works) and two half hearts rise from
+   behind each box to merge in the middle.
+   Repeatable on every pair of taps.
+   ──────────────────────────── */
+(function initDuoHeart() {
+  const cardAiko = document.getElementById('duo-card-aiko');
+  const cardKao = document.getElementById('duo-card-kao');
+  const stage = document.getElementById('duo-heart-stage');
+  if (!cardAiko || !cardKao || !stage) return;
+
+  let armed = null; // 'aiko' | 'kao' | null
+  let armTimer, resetTimer;
+
+  function setArmed(who) {
+    armed = who;
+    cardAiko.classList.toggle('duo-armed', who === 'aiko');
+    cardKao.classList.toggle('duo-armed', who === 'kao');
+    clearTimeout(armTimer);
+    if (who) {
+      armTimer = setTimeout(() => setArmed(null), 5000); // forgiving timeout
+    }
+  }
+
+  /* Suara lembut saat dua hati menyatu */
+  function playHeartSound() {
+    try {
+      const ac = new (window.AudioContext || window.webkitAudioContext)();
+      const now = ac.currentTime;
+
+      function softTone(freq, startT, dur, vol) {
+        const osc  = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + startT);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.25, now + startT + dur * 0.6);
+        gain.gain.setValueAtTime(0.0001, now + startT);
+        gain.gain.exponentialRampToValueAtTime(vol,    now + startT + dur * 0.18);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + startT + dur);
+        osc.connect(gain);
+        gain.connect(ac.destination);
+        osc.start(now + startT);
+        osc.stop(now + startT + dur + 0.05);
+      }
+
+      function bellStrike(freq, startT, vol) {
+        const osc  = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + startT);
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.85, now + startT + 0.9);
+        gain.gain.setValueAtTime(0.0001, now + startT);
+        gain.gain.exponentialRampToValueAtTime(vol,    now + startT + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + startT + 0.9);
+        osc.connect(gain);
+        gain.connect(ac.destination);
+        osc.start(now + startT);
+        osc.stop(now + startT + 1.0);
+      }
+
+      /* Chord lembut: dua hati naik bersama */
+      softTone(392,  0.00, 1.1, 0.12);
+      softTone(523,  0.08, 1.0, 0.10);
+      softTone(659,  0.16, 0.9, 0.08);
+
+      /* Sparkle bell saat momen bertemu */
+      bellStrike(1047, 0.48, 0.07);
+      bellStrike(1319, 0.54, 0.05);
+      bellStrike(1568, 0.60, 0.04);
+
+      /* Nada yang melayang naik di akhir */
+      softTone(784, 0.70, 1.4, 0.06);
+    } catch (e) {}
+  }
+
+  function playDuo() {
+    clearTimeout(resetTimer);
+    stage.classList.remove('active');
+    void stage.offsetWidth;
+    stage.classList.add('active');
+    playHeartSound();
+    resetTimer = setTimeout(() => {
+      stage.classList.remove('active');
+    }, 2600);
+  }
+
+  function handleTap(who) {
+    if (!armed) {
+      setArmed(who);
+      return;
+    }
+    if (armed === who) {
+      // same box tapped again — just keep it armed, refresh the window
+      setArmed(who);
+      return;
+    }
+    // the other box was tapped — they meet in the middle ♡
+    setArmed(null);
+    playDuo();
+  }
+
+  cardAiko.addEventListener('click', () => handleTap('aiko'));
+  cardKao.addEventListener('click', () => handleTap('kao'));
+
+  [cardAiko, cardKao].forEach((card, i) => {
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleTap(i === 0 ? 'aiko' : 'kao');
+      }
+    });
+  });
+})();
+
+/* ────────────────────────────
+   8. BACKGROUND MUSIC (native audio loop)
+   ──────────────────────────── */
+(function initMusic() {
+  const audio = document.getElementById('bg-music');
+  const toggle = document.getElementById('music-toggle');
+  const entryScreen = document.getElementById('entry-screen');
+  const entryBtn = document.getElementById('entry-btn');
+  if (!audio || !toggle) return;
+
+  audio.volume = 0.55;
+  audio.muted = true;
+  toggle.classList.add('muted');
+
+  function tryPlay() {
+    audio.play().catch(() => {});
+  }
+  tryPlay(); // autoplay muted is allowed by every browser
+
+  let unlocked = false;
+  function unlock() {
+    if (unlocked) return;
+    unlocked = true;
+    audio.muted = false;
+    tryPlay();
+    toggle.classList.add('playing');
+    toggle.classList.remove('muted');
+  }
+
+  if (entryBtn && entryScreen) {
+    entryBtn.addEventListener('click', () => {
+      unlock();
+      entryScreen.classList.add('hidden');
+    });
+  } else {
+    // Fallback if entry screen isn't present: unlock on first interaction anywhere
+    document.addEventListener('click', unlock, { once: true });
+    document.addEventListener('keydown', unlock, { once: true });
+    document.addEventListener('touchstart', unlock, { once: true });
+  }
+
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!unlocked) { unlock(); return; }
+    audio.muted = !audio.muted;
+    toggle.classList.toggle('muted', audio.muted);
+    toggle.classList.toggle('playing', !audio.muted);
+  });
+})();
+
+
+/* ────────────────────────────
+   9. SOUND BUBBLE CLICK (UI sfx)
+   ──────────────────────────── */
+(function initClickSound() {
+  // Generated softly via WebAudio — a gentle "bubble pop" blip
+  let ctx;
+  function playBubble() {
+    try {
+      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      const now = ctx.currentTime;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(820, now);
+      osc.frequency.exponentialRampToValueAtTime(1400, now + 0.09);
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.18, now + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.24);
+    } catch (e) {}
+  }
+
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('button, a, .float-card, .credit-card, .log-entry, .feat-tile');
+    if (target) playBubble();
+  });
+})();
+(function initRouter() {
+  const pages = ['shelter', 'about', 'download', 'credits'];
+  const transition = document.getElementById('page-transition');
+  const navLinks = document.querySelectorAll('.nav-link');
+  let switching = false;
+  let pageCtx;
+
+  function playPageTurn() {
+    try {
+      pageCtx = pageCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = pageCtx;
+      const now = ctx.currentTime;
+
+      // Helper: one short layer of filtered paper-noise
+      function rustleLayer(start, dur, freqFrom, freqTo, peakVol, qVal) {
+        const bufferSize = Math.max(1, Math.floor(ctx.sampleRate * dur));
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        let last = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          // softly-colored noise (slight smoothing avoids harsh digital hiss)
+          const white = Math.random() * 2 - 1;
+          last = (last + white * 0.5) / 1.5;
+          const env = Math.sin((i / bufferSize) * Math.PI); // smooth rise & fall, no clicks
+          data[i] = last * env;
+        }
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(freqFrom, now + start);
+        filter.frequency.linearRampToValueAtTime(freqTo, now + start + dur);
+        filter.Q.value = qVal;
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.0001, now + start);
+        gain.gain.linearRampToValueAtTime(peakVol, now + start + dur * 0.35);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + start + dur);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        noise.start(now + start);
+        noise.stop(now + start + dur);
+      }
+
+      // Layered like a real page: quick light flick, a soft body sweep, a gentle settle
+      rustleLayer(0,    0.16, 2200, 3800, 0.05, 2.2);  // initial light flick (high, airy)
+      rustleLayer(0.05, 0.30, 1400, 2400, 0.07, 1.4);  // main paper sweep (mid, fuller)
+      rustleLayer(0.30, 0.22,  900, 1500, 0.035, 1.6); // gentle settle as page lands
+    } catch (e) {}
+  }
+
+  function showPage(name) {
+    if (!pages.includes(name) || switching) return;
+    const current = document.querySelector('.page.active-page');
+    const next = document.getElementById('page-' + name);
+    if (!next || current === next) return;
+
+    switching = true;
+    playPageTurn();
+    transition.classList.add('sweep');
+
+    setTimeout(() => {
+      if (current) current.classList.remove('active-page');
+      next.classList.add('active-page');
+      window.scrollTo(0, 0);
+      window._observeReveals(next);
+      navLinks.forEach(l => l.classList.toggle('active', l.dataset.page === name));
+    }, 420);
+
+    setTimeout(() => {
+      transition.classList.remove('sweep');
+      switching = false;
+    }, 850);
+  }
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      showPage(link.dataset.page);
+    });
+  });
+})();
+
+/* ────────────────────────────
+   10. GALAXY CURSOR TRAIL — Optimised, no-lag particle galaxy
+   ──────────────────────────── */
+(function initGalaxyCursor() {
+  const canvas = document.getElementById('galaxy-canvas');
+  const cursor = document.getElementById('custom-cursor');
+  if (!canvas || !cursor) return;
+
+  const ctx = canvas.getContext('2d');
+  let W = window.innerWidth, H = window.innerHeight;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* ── Mouse tracking — use raw event, no throttle on input ── */
+  let mouseX = -9999, mouseY = -9999;
+
+  function onPointerMove(e) {
+    if (e.pointerType === 'touch') return;
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    cursor.style.left = mouseX + 'px';
+    cursor.style.top  = mouseY + 'px';
+    if (!cursor.classList.contains('visible')) {
+      cursor.classList.add('visible');
+      document.documentElement.classList.add('has-mouse');
+    }
+  }
+  document.addEventListener('pointermove', onPointerMove, { passive: true });
+  document.addEventListener('touchstart', () => {
+    cursor.classList.remove('visible');
+    document.documentElement.classList.remove('has-mouse');
+    mouseX = -9999; mouseY = -9999;
+  }, { passive: true });
+
+  /* ── Palette ── */
+  const PALETTE = [
+    [169,216,238],  // sky
+    [127,179,213],  // sky-mid
+    [207,232,245],  // sky-light
+    [247,226,168],  // gold
+    [240,203,110],  // gold-mid
+    [255,255,255],  // white
+    [173,232,244],  // aiko
+    [199,232,180],  // field
+    [217,162, 59],  // gold-deep
+  ];
+
+  /* ── Trail — fixed-length circular buffer ── */
+  const TRAIL_LEN  = 22;   // shorter trail = doesn't stretch too far
+  const MIN_DIST   = 3;    // min px before adding a new point
+  const trail = new Float32Array(TRAIL_LEN * 2);  // [x0,y0, x1,y1, ...]
+  const trailAngles = new Float32Array(TRAIL_LEN);
+  let   trailHead = 0, trailCount = 0;
+
+  function trailPush(x, y, angle) {
+    trailHead = (trailHead + TRAIL_LEN - 1) % TRAIL_LEN;
+    trail[trailHead * 2]     = x;
+    trail[trailHead * 2 + 1] = y;
+    trailAngles[trailHead]   = angle;
+    if (trailCount < TRAIL_LEN) trailCount++;
+  }
+  function trailGet(i) {   // i=0 is newest
+    const idx = (trailHead + i) % TRAIL_LEN;
+    return { x: trail[idx * 2], y: trail[idx * 2 + 1], angle: trailAngles[idx] };
+  }
+  /* shrink the tail (oldest points) so trail retracts back toward the cursor when idle */
+  function trailShrink(amount) {
+    trailCount = Math.max(0, trailCount - amount);
+  }
+
+  /* ── Particle pool — flat typed arrays for zero GC ── */
+  const MAX_P = 80;
+  const px  = new Float32Array(MAX_P);
+  const py  = new Float32Array(MAX_P);
+  const pvx = new Float32Array(MAX_P);
+  const pvy = new Float32Array(MAX_P);
+  const pr  = new Float32Array(MAX_P);
+  const plife    = new Int16Array(MAX_P);
+  const pmaxlife = new Int16Array(MAX_P);
+  const pcol  = new Uint8Array(MAX_P);   // index into PALETTE
+  const palive = new Uint8Array(MAX_P);  // 0/1
+  let   nextP  = 0;
+
+  function spawnParticle(x, y, angle) {
+    const i = nextP % MAX_P;
+    nextP++;
+    const perp = angle + Math.PI / 2 + (Math.random() - 0.5) * 1.0;
+    const spd  = Math.random() * 0.55 + 0.08;
+    px[i]  = x + (Math.random() - 0.5) * 14;
+    py[i]  = y + (Math.random() - 0.5) * 14;
+    pvx[i] = Math.cos(perp) * spd;
+    pvy[i] = Math.sin(perp) * spd;
+    pr[i]  = Math.random() * 1.8 + 0.4;
+    plife[i]    = 0;
+    pmaxlife[i] = (Math.random() * 45 + 20) | 0;
+    pcol[i]  = (Math.random() * PALETTE.length) | 0;
+    palive[i] = 1;
+  }
+
+  /* ── Star particles — small twinkling 4-point stars sprinkled along the trail ── */
+  const MAX_S = 40;
+  const sx  = new Float32Array(MAX_S);
+  const sy  = new Float32Array(MAX_S);
+  const svx = new Float32Array(MAX_S);
+  const svy = new Float32Array(MAX_S);
+  const ssize = new Float32Array(MAX_S);
+  const srot  = new Float32Array(MAX_S);
+  const svrot = new Float32Array(MAX_S);
+  const slife    = new Int16Array(MAX_S);
+  const smaxlife = new Int16Array(MAX_S);
+  const scol  = new Uint8Array(MAX_S);
+  const salive = new Uint8Array(MAX_S);
+  let   nextS  = 0;
+
+  function spawnStar(x, y, angle) {
+    const i = nextS % MAX_S;
+    nextS++;
+    const spread = angle + Math.PI + (Math.random() - 0.5) * 2.4;
+    const spd = Math.random() * 0.35 + 0.05;
+    sx[i] = x + (Math.random() - 0.5) * 10;
+    sy[i] = y + (Math.random() - 0.5) * 10;
+    svx[i] = Math.cos(spread) * spd;
+    svy[i] = Math.sin(spread) * spd;
+    ssize[i] = Math.random() * 2.6 + 1.6;
+    srot[i] = Math.random() * Math.PI * 2;
+    svrot[i] = (Math.random() - 0.5) * 0.08;
+    slife[i] = 0;
+    smaxlife[i] = (Math.random() * 50 + 35) | 0;
+    scol[i] = (Math.random() * PALETTE.length) | 0;
+    salive[i] = 1;
+  }
+
+  function drawStarShape(cx, cy, size, rot, alpha, color) {
+    const [r,g,b] = color;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rot);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.shadowColor = `rgba(${r},${g},${b},0.9)`;
+    ctx.shadowBlur = size * 2.2;
+    ctx.beginPath();
+    // simple 4-point sparkle star
+    ctx.moveTo(0, -size);
+    ctx.lineTo(size * 0.22, -size * 0.22);
+    ctx.lineTo(size, 0);
+    ctx.lineTo(size * 0.22, size * 0.22);
+    ctx.lineTo(0, size);
+    ctx.lineTo(-size * 0.22, size * 0.22);
+    ctx.lineTo(-size, 0);
+    ctx.lineTo(-size * 0.22, -size * 0.22);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawStars() {
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    for (let i = 0; i < MAX_S; i++) {
+      if (!salive[i]) continue;
+      slife[i]++;
+      if (slife[i] >= smaxlife[i]) { salive[i] = 0; continue; }
+      sx[i] += svx[i];
+      sy[i] += svy[i];
+      svx[i] *= 0.985;
+      svy[i] *= 0.985;
+      srot[i] += svrot[i];
+
+      const prog = slife[i] / smaxlife[i];
+      // twinkle: fade in fast, flicker mid-life, fade out
+      const twinkle = 0.55 + 0.45 * Math.sin(slife[i] * 0.5 + i);
+      const a = Math.sin(prog * Math.PI) * twinkle;
+      drawStarShape(sx[i], sy[i], ssize[i], srot[i], Math.max(0, a), PALETTE[scol[i]]);
+    }
+    ctx.restore();
+  }
+
+  /* Pre-bake reusable offscreen gradient cache per palette color */
+  const gradCache = PALETTE.map(([r,g,b]) => {
+    const og = document.createElement('canvas');
+    og.width = og.height = 24;
+    const oc = og.getContext('2d');
+    const g2 = oc.createRadialGradient(12,12,0, 12,12,12);
+    g2.addColorStop(0,   `rgba(${r},${g},${b},1)`);
+    g2.addColorStop(0.45,`rgba(${r},${g},${b},0.5)`);
+    g2.addColorStop(1,   `rgba(${r},${g},${b},0)`);
+    oc.fillStyle = g2;
+    oc.fillRect(0,0,24,24);
+    return og;
+  });
+
+  /* ── Ribbon: smooth tapered gradient ribbon + woven shimmer strand ── */
+  function drawRibbon() {
+    if (trailCount < 3) return;
+    const len = trailCount;
+    const pts = new Array(len);
+    for (let i = 0; i < len; i++) pts[i] = trailGet(i);
+
+    /* light smoothing pass so the ribbon doesn't look jagged */
+    const sm = new Array(len);
+    sm[0] = pts[0];
+    sm[len - 1] = pts[len - 1];
+    for (let i = 1; i < len - 1; i++) {
+      sm[i] = {
+        x: (pts[i - 1].x + pts[i].x * 2 + pts[i + 1].x) / 4,
+        y: (pts[i - 1].y + pts[i].y * 2 + pts[i + 1].y) / 4
+      };
+    }
+
+    /* compute tapered perpendicular offsets (wide at head, thin at tail) */
+    const leftPts = new Array(len), rightPts = new Array(len);
+    for (let i = 0; i < len; i++) {
+      const p = sm[i];
+      const prog = i / (len - 1);
+      const width = Math.pow(1 - prog, 1.3) * 8.5 + 0.3;
+      let dx, dy;
+      if (i === 0) { dx = p.x - sm[1].x; dy = p.y - sm[1].y; }
+      else { const pp = sm[i - 1]; dx = pp.x - p.x; dy = pp.y - p.y; }
+      const mag = Math.hypot(dx, dy) || 1;
+      const nx = -dy / mag, ny = dx / mag;
+      leftPts[i]  = { x: p.x + nx * width, y: p.y + ny * width };
+      rightPts[i] = { x: p.x - nx * width, y: p.y - ny * width };
+    }
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+
+    /* --- filled tapered ribbon body with gradient along its length --- */
+    const head = sm[0], tail = sm[len - 1];
+    const grad = ctx.createLinearGradient(head.x, head.y, tail.x, tail.y);
+    grad.addColorStop(0,    'rgba(255,255,255,0.55)');
+    grad.addColorStop(0.22, 'rgba(169,216,238,0.42)');
+    grad.addColorStop(0.5,  'rgba(247,226,168,0.26)');
+    grad.addColorStop(0.78, 'rgba(199,232,180,0.14)');
+    grad.addColorStop(1,    'rgba(127,179,213,0)');
+    ctx.beginPath();
+    ctx.moveTo(leftPts[0].x, leftPts[0].y);
+    for (let i = 1; i < len; i++) ctx.lineTo(leftPts[i].x, leftPts[i].y);
+    for (let i = len - 1; i >= 0; i--) ctx.lineTo(rightPts[i].x, rightPts[i].y);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    /* --- outer soft glow outline, slightly wider, very faint --- */
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 6;
+    ctx.globalAlpha = 0.10;
+    ctx.strokeStyle = 'rgba(169,216,238,0.9)';
+    ctx.beginPath();
+    ctx.moveTo(head.x, head.y);
+    for (let i = 1; i < len; i++) ctx.lineTo(sm[i].x, sm[i].y);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    /* --- two shimmering strands weaving across the ribbon width --- */
+    for (let strand = 0; strand < 2; strand++) {
+      ctx.beginPath();
+      let started = false;
+      for (let i = 0; i < len; i++) {
+        const prog = i / (len - 1);
+        const wob = 0.5 + 0.5 * Math.sin(prog * 9 + frameT * 0.12 + strand * Math.PI);
+        const wx = rightPts[i].x + (leftPts[i].x - rightPts[i].x) * wob;
+        const wy = rightPts[i].y + (leftPts[i].y - rightPts[i].y) * wob;
+        if (!started) { ctx.moveTo(wx, wy); started = true; }
+        else ctx.lineTo(wx, wy);
+      }
+      const ci = strand === 0 ? 5 : 3; // white-ish, gold-ish
+      const [r,g,b] = PALETTE[ci];
+      ctx.lineWidth = 1.1;
+      ctx.strokeStyle = `rgb(${r},${g},${b})`;
+      ctx.globalAlpha = 0.5;
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    /* --- a few colour-cycling bright beads riding along the ribbon --- */
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    const beadCount = Math.min(6, len - 1);
+    for (let b = 0; b < beadCount; b++) {
+      const t = (b / beadCount + (frameT * 0.006)) % 1;
+      const idx = Math.min(len - 1, Math.floor(t * (len - 1)));
+      const p = sm[idx];
+      const prog = idx / (len - 1);
+      const ci = (Math.floor((frameT * 0.05 + b * 2)) ) % PALETTE.length;
+      const [r,g,b2] = PALETTE[ci];
+      const rad = (1 - prog) * 3 + 0.6;
+      const a = (1 - prog) * 0.55;
+      const bg = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, rad * 2.2);
+      bg.addColorStop(0, `rgba(${r},${g},${b2},${a})`);
+      bg.addColorStop(1, `rgba(${r},${g},${b2},0)`);
+      ctx.fillStyle = bg;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, rad * 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    /* --- nebula core glow at cursor head --- */
+    const coreGrd = ctx.createRadialGradient(head.x, head.y, 0, head.x, head.y, 20);
+    coreGrd.addColorStop(0,   'rgba(255,255,255,0.72)');
+    coreGrd.addColorStop(0.3, 'rgba(169,216,238,0.42)');
+    coreGrd.addColorStop(0.7, 'rgba(127,179,213,0.12)');
+    coreGrd.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    ctx.globalAlpha = 1;
+    ctx.beginPath();
+    ctx.arc(head.x, head.y, 20, 0, Math.PI * 2);
+    ctx.fillStyle = coreGrd;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /* ── Particle draw — use cached offscreen canvas, drawImage is GPU-fast ── */
+  function drawParticles() {
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    for (let i = 0; i < MAX_P; i++) {
+      if (!palive[i]) continue;
+      plife[i]++;
+      if (plife[i] >= pmaxlife[i]) { palive[i] = 0; continue; }
+      px[i] += pvx[i];
+      py[i] += pvy[i];
+      pvx[i] *= 0.97;
+      pvy[i] *= 0.97;
+
+      const prog = plife[i] / pmaxlife[i];
+      const a    = (1 - prog) * 0.65;
+      const r    = pr[i];
+      const s    = r * 3;          // draw size
+      ctx.globalAlpha = a;
+      ctx.drawImage(gradCache[pcol[i]], px[i] - s, py[i] - s, s * 2, s * 2);
+    }
+    ctx.restore();
+  }
+
+  /* ── Main loop ── */
+  let lastX = -9999, lastY = -9999, frameT = 0;
+  let lastMoveT = 0, idleFrames = 0;
+
+  function loop() {
+    requestAnimationFrame(loop);
+    ctx.clearRect(0, 0, W, H);
+
+    if (mouseX < -9000) return;
+
+    /* Add trail point only if cursor moved enough */
+    const dx = mouseX - lastX, dy = mouseY - lastY;
+    const moved = dx*dx + dy*dy > MIN_DIST * MIN_DIST;
+    if (moved) {
+      const angle = Math.atan2(dy, dx);
+      trailPush(mouseX, mouseY, angle);
+      lastX = mouseX; lastY = mouseY;
+      idleFrames = 0;
+
+      /* Spawn particle ~40% of the time */
+      if (Math.random() < 0.40) spawnParticle(mouseX, mouseY, angle);
+      /* Spawn a sparkling star less often */
+      if (Math.random() < 0.18) spawnStar(mouseX, mouseY, angle);
+    } else {
+      idleFrames++;
+      /* cursor stopped — let the trail melt back toward the cursor */
+      if (idleFrames > 4 && trailCount > 0) {
+        trailShrink(2);
+      }
+    }
+
+    drawRibbon();
+    drawParticles();
+    drawStars();
+    frameT++;
+  }
+
+  loop();
+})();
+
+</script>
+</body>
+</html>
